@@ -1,4 +1,4 @@
-ban-users-wordpress
+Ban Users - WordPress Plugin
 ===================
 
 Plugin created by RemiCorson.
