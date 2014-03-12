@@ -1,4 +1,5 @@
 ban-users-wordpress
 ===================
 
-Ban WordPress User Plugin\
+Plugin created by RemiCorson.
+Read the full tutorial here: http://www.wpexplorer.com/how-to-ban-a-wordpress-user/
