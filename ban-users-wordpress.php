@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: Ban Users
-Plugin URI: http://www.remicorson.com
+Plugin URI: http://www.wpexplorer.com/how-to-ban-a-wordpress-user/
 Description: Allows you to ban users
 Author: Remi Corson
 Version: 1.0
-Author URI: http://www.remicorson.com
+Author URI: http://www.wpexplorer.com
 */
 
 /**
@@ -45,11 +45,10 @@ function rc_edit_user_profile() {
 		return;
 	}
 	?>
-	<h3></h3>
 	<table class="form-table">
 	<tr>
-		<th scope="row"></th>
-		<td><label for="rc_ban"><input name="rc_ban" type="checkbox" id="rc_ban"  /> </label></td>
+		<th scope="row">Ban User</th>
+		<td><label for="rc_ban"><input name="rc_ban" type="checkbox" id="rc_ban" />Ban this user</label></td>
 	</tr>
 	</table>
 	<?php
