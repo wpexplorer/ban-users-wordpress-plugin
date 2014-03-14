@@ -145,7 +145,7 @@ function rc_is_user_banned( $user_id ) {
  * @since       1.0 
  * @return      void
 */
-function rc_authenticate_user( $user ) {
+function rc_authenticate_user( $user, $password ) {
 
 	if ( is_wp_error( $user ) ) {
 		return $user;
@@ -159,4 +159,4 @@ function rc_authenticate_user( $user ) {
 	
 	return $user;
 }
-add_filter( 'wp_authenticate_user', 'rc_authenticate_user', 1 );
+add_filter( 'wp_authenticate_user', 'rc_authenticate_user', 10, 2 );
