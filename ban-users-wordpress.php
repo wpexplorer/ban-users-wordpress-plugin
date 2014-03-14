@@ -48,7 +48,10 @@ function rc_edit_user_profile() {
 	<table class="form-table">
 	<tr>
 		<th scope="row">Ban User</th>
-		<td><label for="rc_ban"><input name="rc_ban" type="checkbox" id="rc_ban" />Ban this user</label></td>
+		<td>
+		<label for="rc_ban">
+			<input name="rc_ban" type="checkbox" id="rc_ban" <?php if ( get_user_option( 'rc_banned', $user_id, false ) ) echo ' checked="checked"'; ?> />Ban this user</label>
+		</td>
 	</tr>
 	</table>
 	<?php
