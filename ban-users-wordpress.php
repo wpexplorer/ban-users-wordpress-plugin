@@ -9,101 +9,107 @@ Author URI: http://www.wpexplorer.com
 */
 
 /**
- * Admin init
- *
- * @access      public
- * @since       1.0 
- * @return      void
-*/
-function rc_admin_init(){
-	// Edit user profile
-	add_action( 'edit_user_profile', 'rc_edit_user_profile' );
-	add_action( 'edit_user_profile_update', 'rc_edit_user_profile_update' );
-	
-}
-add_action('admin_init', 'rc_admin_init' );
-
-
-/**
  * Adds custom checkbox to user edition page
  *
  * @access      public
- * @since       1.0 
- * @return      void
-*/
-function rc_edit_user_profile() {
-	if ( !current_user_can( 'edit_users' ) ) {
+ * @since       1.0
+ *
+ * @param object $user
+ *
+ * @return void
+ */
+
+function rc_edit_user_profile( $user ) {
+
+	// Proper authentication
+
+	if ( ! current_user_can( 'edit_users' ) ) {
 		return;
 	}
-	
-	global $user_id;
-	
-	// User cannot disable itself
-	$current_user = wp_get_current_user();
-	$current_user_id = $current_user->ID;
-	if ( $current_user_id == $user_id ) {
+
+	// Do not show on user's own edit screen
+
+	if ( get_current_user_id() == $user->ID ) {
 		return;
 	}
+
 	?>
 	<table class="form-table">
-	<tr>
-		<th scope="row">Ban User</th>
-		<td>
-		<label for="rc_ban">
-			<input name="rc_ban" type="checkbox" id="rc_ban" <?php if ( get_user_option( 'rc_banned', $user_id, false ) ) echo ' checked="checked"'; ?> />Ban this user</label>
-		</td>
-	</tr>
+		<tr>
+			<th scope="row">Ban User</th>
+			<td>
+			<label for="rc_ban">
+				<input name="rc_ban" type="checkbox" id="rc_ban" <?php
+					checked( rc_is_user_banned( $user->ID ), TRUE )?> value="1">
+					Ban this user</label>
+			</td>
+		</tr>
 	</table>
 	<?php
 }
+
+add_action( 'edit_user_profile', 'rc_edit_user_profile' );
 
 
 /**
  * Save custom checkbox
  *
  * @access      public
- * @since       1.0 
+ * @since       1.0
+ *
+ * @param int $user_id
+ *
  * @return      void
-*/
-function rc_edit_user_profile_update() {
-			
-	if ( !current_user_can( 'edit_users' ) ) {
+ */
+
+function rc_edit_user_profile_update( $user_id ) {
+
+	// Proper authentication
+
+	if ( ! current_user_can( 'edit_users' ) ) {
 		return;
 	}
-	
-	global $user_id;
-	
-	// User cannot disable itself
-	$current_user    = wp_get_current_user();
-	$current_user_id = $current_user->ID;
-	if ( $current_user_id == $user_id ) {
+
+	// Do not show on user's own edit screen
+
+	if ( get_current_user_id() == $user_id ) {
 		return;
 	}
-	
-	// Lock
-	if( isset( $_POST['rc_ban'] ) && $_POST['rc_ban'] = 'on' ) {
-		rc_ban_user( $user_id );
-	} else { // Unlock
+
+	if ( empty( $_POST['rc_ban'] ) ) {
+
+		// Unlock
+
 		rc_unban_user( $user_id );
+	} else {
+
+		// Lock
+
+		rc_ban_user( $user_id );
 	}
 	
 }
+
+add_action( 'edit_user_profile_update', 'rc_edit_user_profile_update' );
 
 
 /**
  * Ban user
  *
  * @access      public
- * @since       1.0 
+ * @since       1.0
+ *
+ * @param int $user_id
+ *
  * @return      void
-*/
+ */
+
 function rc_ban_user( $user_id ) {
-	
-	$old_status = rc_is_user_banned( $user_id );
-	
+
 	// Update status
-	if ( !$old_status ) {
-		update_user_option( $user_id, 'rc_banned', true, false );
+
+	if ( ! rc_is_user_banned( $user_id ) ) {
+		update_user_option( $user_id, 'rc_banned', TRUE, FALSE );
 	}
 }
 
@@ -112,16 +118,19 @@ function rc_ban_user( $user_id ) {
  * Un-ban user
  *
  * @access      public
- * @since       1.0 
+ * @since       1.0
+ *
+ * @param int $user_id
+ *
  * @return      void
-*/
+ */
+
 function rc_unban_user( $user_id ) {
 
-	$old_status = rc_is_user_banned( $user_id );
-	
 	// Update status
-	if ( $old_status ) {
-		update_user_option( $user_id, 'rc_banned', false, false );
+
+	if ( rc_is_user_banned( $user_id ) ) {
+		update_user_option( $user_id, 'rc_banned', FALSE, FALSE );
 	}
 }
 
@@ -130,11 +139,15 @@ function rc_unban_user( $user_id ) {
  * Checks if a user is already banned
  *
  * @access      public
- * @since       1.0 
- * @return      void
-*/
+ * @since       1.0
+ *
+ * @param int $user_id
+ *
+ * @return bool
+ */
+
 function rc_is_user_banned( $user_id ) {
-	return get_user_option( 'rc_banned', $user_id, false );
+	return get_user_option( 'rc_banned', $user_id );
 }
 
 
@@ -142,9 +155,14 @@ function rc_is_user_banned( $user_id ) {
  * Check if user is locked while login process
  *
  * @access      public
- * @since       1.0 
- * @return      void
-*/
+ * @since       1.0
+ *
+ * @param $user
+ * @param $password
+ *
+ * @return WP_Error, object
+ */
+
 function rc_authenticate_user( $user, $password ) {
 
 	if ( is_wp_error( $user ) ) {
@@ -152,11 +170,16 @@ function rc_authenticate_user( $user, $password ) {
 	}
 	
 	// Return error if user account is banned
-	$banned = get_user_option( 'rc_banned', $user->ID, false );
-	if ( $banned ) {
-		return new WP_Error( 'rc_banned', __('<strong>ERROR</strong>: This user account is disabled.', 'rc') );
+
+	if ( get_user_option( 'rc_banned', $user->ID, FALSE ) ) {
+
+		return new WP_Error(
+			'rc_banned',
+			__( '<strong>ERROR</strong>: This user account is disabled.', 'rc' )
+		);
 	}
 	
 	return $user;
 }
+
 add_filter( 'wp_authenticate_user', 'rc_authenticate_user', 10, 2 );
